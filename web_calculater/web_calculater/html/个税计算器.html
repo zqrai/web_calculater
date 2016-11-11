@@ -1,0 +1,198 @@
+<html>
+<head>
+<style>
+#count{
+background-image:url(img/jisuan.jpg);
+width:60px;
+height:23px;
+border:0;
+}
+#backpush{
+background-image:url(img/fantui.jpg);
+width:60px;
+height:24px;
+border:0;}
+#reset{
+background-image:url(img/chongzhi.jpg);
+width:60px;
+height:23px;
+border:0;}
+</style>
+<title>个税计算器</title>
+<script>
+    var koufei=0;
+    function $(obk){
+        return document.getElementById(obk);
+    }
+    //写出计算的方法
+    function countFun(percent,val){
+        return (percent/100)*val;
+    }
+    //截取小数点后两位；
+    function floatTwo(num){
+        var i=num.toString().indexOf(".");
+        if(i>0){
+            var a1=num.toString().substring(0,i+2);  
+            return a1;
+        }else 
+            return num;
+
+    }
+    function changValue(val){
+        var shebao = $("shebao");
+        var gongjijing = $("gongjijing");
+        var maxnum = $("maxnum");
+        var reg = /^d+|-$/gi;    //判断是否输入的是数字并为正数
+        if(reg.test(val)==false){
+            $("pre-tax").value="";
+            return;
+        }
+        if(val<=850){
+            shebao.value="1500";
+            gongjijing.value="850";
+            
+        }else if(val>850 && val<=1500){
+            shebao.value="1500";
+            gongjijing.value=val;
+        }else if(val>1500 && val<=7500){
+            shebao.value=val;
+            gongjijing.value=val;
+        }else if(val>7500){
+            shebao.value=7500;
+            gongjijing.value=7500;
+        }
+        
+        //显示 个人缴费详情
+        $("yanglaovalue").innerText=floatTwo(countFun($("tx_yanglao").value,shebao.value));
+        $("yiliaovalue").innerText=floatTwo(countFun($("tx_yiliao").value,shebao.value));
+        $("shiyevalue").innerText=floatTwo(countFun($("tx_shiye").value,shebao.value));
+        $("gongjijingvalue").innerText=floatTwo(countFun($("tx_gongjijing").value,gongjijing.value));
+    
+        var baoxian = parseInt($("yanglaovalue").innerText)+parseInt($("yiliaovalue").innerText)+parseInt($("shiyevalue").innerText)+parseInt($("gongjijingvalue").innerText);        //三险一金所有费用
+    
+         $("taxtotal").innerText =floatTwo(baoxian);//显示个人缴费合计
+    
+        //显示右边单位缴费详情：
+        $("yanglaovalue2").innerText=floatTwo(countFun($("tx_yanglao2").value,shebao.value));
+        $("yiliaovalue2").innerText=floatTwo(countFun($("tx_yiliao2").value,shebao.value));
+        $("shiyevalue2").innerText=floatTwo(countFun($("tx_shiye2").value,shebao.value));
+        $("gongjijingvalue2").innerText=floatTwo(countFun($("tx_gongjijing2").value,gongjijing.value));
+        $("gongshangvalue").innerText=floatTwo(countFun($("tx_gongshang").value,shebao.value));
+        $("shengyuvalue").innerText=floatTwo(countFun($("tx_shengyu").value,gongjijing.value));
+    
+        //计算单位缴费合计:
+        $("departmenttotal").innerText=parseInt($("yanglaovalue2").innerText)+parseInt($("yiliaovalue2").innerText)+parseInt($("shiyevalue2").innerText)+parseInt($("gongjijingvalue2").innerText)+parseInt($("gongshangvalue").innerText)+parseInt($("shengyuvalue").innerText);
+        //显示单位总支出，   单位总支出＝计算单位缴费合计+税前月收入;
+        $("departmenttotal2").innerText=parseInt($("departmenttotal").innerText)+parseInt(val);
+        
+        //显示应纳税额总计：
+         var num = val-parseInt($("taxtotal").innerText)-$("taxstart").value;
+        if(num>0){
+            $("musttaxtotal").innerText=floatTwo(num*caluTaxPercent(num)-koufei);
+            
+        }else
+            $("musttaxtotal").innerText=0;
+    
+}
+
+//给我应纳税所得额，我返回税率   /应纳税所得额=扣除三险一金后月收入 -扣除标准 
+function caluTaxPercent(val){
+    if(val<=1500){
+        koufei=0;
+        return 0.03; 
+        
+    }else if(val>1500 && val <=4500){
+        koufei=105;
+        return 0.1;
+        
+    }else if(val>4500 && val<=9000){
+        koufei=255;
+        return 0.2;
+    }else if(val>9000 && val<=35000){
+        koufei=1005;   
+        return 0.25;
+    }else if(val>35000 && val<=55000){
+        koufei=2755;
+        return 0.30;
+    }else if(val>55000 && val<=80000){
+        koufei=5505;
+        return 0.35;
+    }else if(val>80000)
+        koufei=13505;
+        return 0.45;
+}
+//点击计算按钮时执行的事件
+function count(){
+    $("tax").value=$("musttaxtotal").innerText;
+    $("back-tax").value=$("pre-tax").value-$("tax").value-parseInt($("taxtotal").innerText);
+}
+</script>
+</head>
+
+<body>
+<div id="maindiv" style="width:400px;margin-left:230px">
+<div id="topdiv" style="font-size:16px">
+<table align="center" width="400px">
+	<tbody>
+		<tr>
+			<td  style="width:30%">收入类型：</td><td colspan="2" align="left"><input type="text" value="工资薪金所得(月薪)" readonly="readonly"/></td>
+		</tr>
+		<tr style="width:50%">
+			<td>选择城市：</td><td align="left"><input type="text" value="长沙" readonly="readonly"/></td><td></td>
+		</tr>
+		<tr>
+			<td><font color="#006633">税前月收入:</font></td>
+			<td align="left"><input type="text" name="pre-tax" id="pre-tax" onkeyup="changValue(this.value)"/>元</td>
+			<td><input type="button" name="count" id="count" onclick="count()"/></td>
+		</tr>
+		<tr>
+			<td><font color="#006633">税后月收入:</font></td>
+			<td align="left"><input type="text" name="back-tax" id="back-tax" />元</td>
+			<td><input type="button" name="backpush" id="backpush"/></td>
+		</tr>
+		<tr>
+			<td><font color="#006633">缴纳个税:</font></td>
+			<td align="left"><input type="text" name="tax" id="tax" readonly="readonly"/>元</td>
+			<td><input type="button" name="reset" id="reset"/></td>
+		</tr>
+		<tr>
+			<td align="center" colspan="3"><font color="#990033">计算结果仅供参考</font></td>
+		</tr>
+	</tbody>
+	
+</table>
+</div>
+<div id="middiv" style="font-size:14px; font-family:"新宋体"">
+	<hr align="center" style="margin-left:25px;margin-rigth:50px;" width="350px"/>
+	<div align="center" style=";padding-bottom:20px"><b>社保与公积金缴费明细</b>(可调整参数)</div>
+	<div align="left" id="mid-leftdiv" style="width:200px; border-right:1px solid #666666; float:left">
+	个人缴费合计:<span id="taxtotal" name="taxtotal" style="margin-left:20px"></span><br />
+	应纳税额总计:<span id="musttaxtotal" name="musttaxtotal" style="margin-left:20px"></span><br />
+	养老<input type="text" id="tx_yanglao" name="tx_yanglao" size="4" style="margin-left:15px" value="8"/>%:<span id="yanglaovalue" name="yanglaovalue" style="margin-left:20px"></span><br />
+	医疗<input type="text" id="tx_yiliao" name="tx_yiliao" size="4" style="margin-left:15px" value="2"/>%:<span id="yiliaovalue" name="yiliaovalue" style="margin-left:20px"></span><br />
+	失业<input type="text" id="tx_shiye" name="tx_shiye" size="4" style="margin-left:15px" value="1"/>%:<span id="shiyevalue" name="shiyevalue" style="margin-left:20px"></span><br /><br /><br /><br />
+	公积金<input type="text" id="tx_gongjijing" name="tx_gongjijing" size="4" value="8"/>%:<span id="gongjijingvalue" name="gongjijingvalue" style="margin-left:20px"></span><br />
+	</div>
+
+    <div id="mid-rightdiv" style="margin-left:30px">
+	单位缴费合计:<span id="departmenttotal" name="departmenttotal" style="margin-left:20px"></span><br />
+	单位支出总计:<span id="departmenttotal2" name="departmenttotal2" style="margin-left:20px"></span><br />
+	养老<input type="text" id="tx_yanglao2" name="tx_yanglao2" size="4" style="margin-left:15px" value="20"/>%:<span id="yanglaovalue2" name="yanglaovalue2" style="margin-left:20px"></span><br />
+	医疗<input type="text" id="tx_yiliao2" name="tx_yiliao2" size="4" style="margin-left:15px" value="8"/>%:<span id="yiliaovalue2" name="yiliaovalue2" style="margin-left:20px"></span><br />
+	失业<input type="text" id="tx_shiye2" name="tx_shiye2" size="4" style="margin-left:15px" value="2"/>%:<span id="shiyevalue2" name="shiyevalue2" style="margin-left:20px"></span><br />
+	工伤<input type="text" id="tx_gongshang" name="tx_gongshang" size="4" style="margin-left:15px" value="0.5"/>%:<span id="gongshangvalue" name="gongshangvalue" style="margin-left:20px"></span><br />
+	生育<input type="text" id="tx_shengyu" name="tx_shengyu" size="4" style="margin-left:15px" value="0.7"/>%:<span id="shengyuvalue" name="shengyuvalue" style="margin-left:20px"></span><br />
+	公积金<input type="text" id="tx_gongjijing2" name="tx_gongjijing2" size="4" value="8"/>%:<span id="gongjijingvalue2" name="gongjijingvalue2" style="margin-left:20px">6564</span><br />
+	</div>
+	
+	<hr align="center" style="margin-left:25px;margin-rigth:50px;" width="350px"/>
+	
+	<div id="bottom" style="font-size:14px; color:#009900">
+		缴费基数：<span style=" font-size:12px">社保</span><span><input type="text" size="6" id="shebao" name="shebao"/></span> <span style=" font-size:12px">公积金</span><input type="text" size="6" id="gongjijing" name="gongjijing"/><span style=" font-size:12px"> 封顶数</span><input type="text" size="6" id="maxnum" name="maxnum" value="7500"/><br />
+		个税起征点:<input id="taxstart" name="taxstart" type="text" size="8" value="3500"/>
+		<input type="radio" name="type" id="type" value="国内" checked="checked" style="margin-left:20px"/>国内<input type="radio" name="type" value="外籍" style="margin-left:20px"/>外籍
+	</div>
+</div>
+</div>
+</body>
+</html>

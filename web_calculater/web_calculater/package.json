@@ -1,0 +1,6 @@
+{
+  "name": "web_calculater",
+  "dependencies": {
+    "csvtojson":"latest"
+  }
+}
